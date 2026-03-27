@@ -6,7 +6,11 @@ from pathlib import Path
 from djpt.artifacts import create_run_dir, write_json, write_text
 from djpt.llm.generation import CandidateGenerator, DeterministicAudioToCodeProvider
 from djpt.optimize.search import FitOptions, run_search
-from djpt.optimize.promptopt import snapshot_prompt_optimization_summary
+from djpt.optimize.promptopt import (
+    PROMPT_FILES,
+    snapshot_prompt_optimization_summary,
+    snapshot_prompt_templates,
+)
 from djpt.schemas import BenchmarkFixture, BenchmarkResult, BenchmarkRunSummary
 
 
@@ -36,6 +40,13 @@ def unresolved_fixtures(fixtures: list[BenchmarkFixture]) -> list[BenchmarkFixtu
 
 def resolved_fixtures(fixtures: list[BenchmarkFixture]) -> list[BenchmarkFixture]:
     return [fixture for fixture in fixtures if fixture.target_path is not None]
+
+
+def _resolve_prompts_root(manifest_path: Path) -> Path:
+    candidate = manifest_path.resolve().parents[2] / "prompts"
+    if candidate.exists():
+        return candidate
+    return Path(__file__).resolve().parents[2] / "prompts"
 
 
 def _run_fixture(
@@ -68,20 +79,6 @@ def _run_fixture(
     )
 
 
-def _snapshot_prompt_templates(destination_dir: Path) -> list[str]:
-    prompt_root = Path(__file__).resolve().parents[2] / "prompts"
-    if not prompt_root.exists():
-        return []
-
-    snapshot_paths: list[str] = []
-    prompt_snapshot_dir = destination_dir / "prompts"
-    for prompt_path in sorted(prompt_root.glob("*.md")):
-        target_path = prompt_snapshot_dir / prompt_path.name
-        write_text(target_path, prompt_path.read_text(encoding="utf-8"))
-        snapshot_paths.append(str(target_path))
-    return snapshot_paths
-
-
 def persist_benchmark_summary(
     *,
     manifest_path: Path,
@@ -90,15 +87,29 @@ def persist_benchmark_summary(
     benchmark_dir = create_run_dir("benchmark")
     summary_path = benchmark_dir / "benchmark-summary.json"
     prompt_summary_path = benchmark_dir / "prompt-optimization-summary.json"
-    prompt_template_paths = _snapshot_prompt_templates(benchmark_dir)
+    prompt_templates_path = benchmark_dir / "prompt-templates.json"
+    prompt_snapshot_dir = benchmark_dir / "prompts"
     prompt_summary = snapshot_prompt_optimization_summary(output_path=prompt_summary_path)
+    prompt_templates = snapshot_prompt_templates(
+        prompts_root=_resolve_prompts_root(manifest_path),
+        output_path=prompt_templates_path,
+    )
+    prompt_template_paths = [
+        str((prompt_snapshot_dir / prompt_name).resolve())
+        for prompt_name in PROMPT_FILES
+        if prompt_name in prompt_templates
+    ]
+    for prompt_name, contents in prompt_templates.items():
+        write_text(prompt_snapshot_dir / prompt_name, contents)
     write_json(
         summary_path,
         {
             "manifest_path": str(manifest_path),
             "prompt_optimization_summary_path": str(prompt_summary_path),
+            "prompt_templates_path": str(prompt_templates_path),
             "prompt_template_snapshot_paths": prompt_template_paths,
             "prompt_optimization_summary": prompt_summary,
+            "prompt_templates": prompt_templates,
             **summary.model_dump(mode="json"),
         },
     )

@@ -20,6 +20,7 @@ from djpt.optimize.search import FitOptions, run_search
 from djpt.optimize.promptopt import (
     prompt_optimization_available,
     prompt_optimization_summary_dict,
+    run_prompt_optimization,
 )
 from djpt.config import AppConfig
 from djpt.renderer_client import render_strudel
@@ -169,8 +170,25 @@ def promptopt(
         None,
         help="Optional path to write the prompt-optimization summary JSON.",
     ),
+    manifest_path: Path | None = typer.Option(
+        None,
+        "--manifest",
+        help="Optional benchmark manifest to run full DSPy prompt optimization against.",
+    ),
+    max_examples: int = typer.Option(3, help="Maximum benchmark examples to optimize against."),
+    auto: str = typer.Option("light", help="DSPy MIPROv2 optimization budget: light, medium, or heavy."),
 ) -> None:
     """Report optional prompt-optimization availability and metadata."""
+
+    if manifest_path is not None:
+        result = run_prompt_optimization(
+            manifest_path.resolve(),
+            config=AppConfig.from_env(),
+            max_examples=max_examples,
+            auto=auto,
+        )
+        _print_json(result)
+        return
 
     payload = prompt_optimization_summary_dict()
     if output_path is not None:

@@ -53,5 +53,7 @@ def test_run_benchmark_builds_fixture_results(tmp_path: Path) -> None:
     assert summary.metadata["results_path"].endswith("benchmark-summary.json")
     snapshot_dir = Path(summary.metadata["snapshot_dir"])
     assert snapshot_dir.exists()
+    print("SNAPSHOT_DIR", snapshot_dir)
+    print("SNAPSHOT_CONTENTS", list(snapshot_dir.rglob("*")))
     for prompt_name in PROMPT_FILES:
         assert (snapshot_dir / "prompts" / prompt_name).exists()

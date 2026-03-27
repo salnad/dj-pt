@@ -78,3 +78,24 @@ def snapshot_prompt_templates(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return payload
+
+
+def run_prompt_optimization(
+    manifest_path: str | Path,
+    *,
+    output_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """
+    Return a persisted capability snapshot for prompt optimization.
+
+    This keeps the interface stable while full DSPy-driven compilation remains optional.
+    """
+
+    payload = prompt_optimization_summary_dict()
+    payload["manifest_path"] = str(Path(manifest_path).resolve())
+    if output_path is not None:
+        path = Path(output_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        payload["snapshot_path"] = str(path.resolve())
+    return payload
