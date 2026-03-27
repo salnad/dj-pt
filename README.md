@@ -152,11 +152,18 @@ python3 -m djpt.cli benchmark benchmarks/simple/manifest.json
 python3 scripts/generate_benchmark_targets.py
 ```
 
+### Run the deterministic benchmark loop
+
+```bash
+python3 -m djpt.cli benchmark benchmarks/simple/manifest.json --run
+```
+
 ## Benchmarks and prompt optimization
 
-The repository includes hooks for:
+The repository includes:
 
 - benchmark fixture manifests
+- target-generation from Strudel fixtures
 - aggregate score reporting
 - optional DSPy-based prompt optimization
 

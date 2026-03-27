@@ -8,7 +8,13 @@ import typer
 from djpt.audio.analysis import compare_audio
 from djpt.audio.features import analyze_audio
 from djpt.audio.calibration import derive_bands
-from djpt.benchmark import load_manifest, summarize_results, unresolved_fixtures
+from djpt.benchmark import (
+    load_manifest,
+    resolved_fixtures,
+    run_benchmark,
+    summarize_results,
+    unresolved_fixtures,
+)
 from djpt.llm.generation import CandidateGenerator, DeterministicAudioToCodeProvider
 from djpt.optimize.search import FitOptions, run_search
 from djpt.optimize.promptopt import prompt_optimization_available
@@ -108,17 +114,37 @@ def fit(
 @app.command()
 def benchmark(
     manifest_path: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=False),
+    run: bool = typer.Option(False, "--run", help="Execute the deterministic benchmark loop."),
+    iterations: int = typer.Option(1, help="Benchmark search iterations when --run is used."),
+    candidate_count: int = typer.Option(1, help="Candidates per iteration when --run is used."),
+    beam_width: int = typer.Option(1, help="Beam width when --run is used."),
 ) -> None:
     """Run benchmark fixtures."""
 
     fixtures = load_manifest(manifest_path.resolve())
+    summary = (
+        run_benchmark(
+            manifest_path.resolve(),
+            CandidateGenerator(DeterministicAudioToCodeProvider()),
+            options=FitOptions(
+                iterations=iterations,
+                candidate_count=candidate_count,
+                beam_width=beam_width,
+                cycles=4.0,
+                cps=0.5,
+            ),
+        )
+        if run
+        else summarize_results([])
+    )
     _print_json(
         {
             "manifest_path": str(manifest_path.resolve()),
             "fixture_count": len(fixtures),
             "fixture_ids": [fixture.fixture_id for fixture in fixtures],
+            "resolved_fixture_ids": [fixture.fixture_id for fixture in resolved_fixtures(fixtures)],
             "unresolved_fixture_ids": [fixture.fixture_id for fixture in unresolved_fixtures(fixtures)],
-            "summary": summarize_results([]),
+            "summary": summary,
             "dspy_available": prompt_optimization_available(),
         }
     )

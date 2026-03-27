@@ -33,3 +33,13 @@ def describe_prompt_optimization() -> PromptOptimizationSummary:
         ],
         metadata={"package": "dspy-ai"},
     )
+
+
+def prompt_optimization_summary_dict() -> dict[str, Any]:
+    summary = describe_prompt_optimization()
+    return {
+        "available": summary.available,
+        "optimizer": summary.optimizer,
+        "notes": summary.notes,
+        "metadata": summary.metadata,
+    }
