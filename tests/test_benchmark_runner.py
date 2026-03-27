@@ -47,5 +47,6 @@ def test_run_benchmark_builds_fixture_results(tmp_path: Path) -> None:
         options=FitOptions(iterations=1, candidate_count=1, beam_width=1, cycles=2, cps=0.5),
     )
 
-    assert summary["count"] == 1
-    assert summary["fixtures"][0]["fixture_id"] == "demo"
+    assert summary.count == 1
+    assert summary.fixtures[0].fixture_id == "demo"
+    assert summary.metadata["results_path"].endswith("benchmark-summary.json")

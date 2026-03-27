@@ -43,3 +43,15 @@ def prompt_optimization_summary_dict() -> dict[str, Any]:
         "notes": summary.notes,
         "metadata": summary.metadata,
     }
+
+
+def snapshot_prompt_optimization_summary(*, output_path: str | None = None) -> dict[str, Any]:
+    payload = prompt_optimization_summary_dict()
+    if output_path is not None:
+        from pathlib import Path
+        import json
+
+        path = Path(output_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return payload

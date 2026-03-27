@@ -15,7 +15,11 @@ def test_summarize_results_returns_average_and_count(tmp_path):
 
 
 def test_summarize_results_empty():
-    assert summarize_results([]) == {"count": 0, "average_score": 0.0}
+    assert summarize_results([]) == {
+        "count": 0,
+        "average_score": 0.0,
+        "fixtures": [],
+    }
 
 
 def test_summarize_results_tracks_best_fixture(tmp_path):
@@ -28,3 +32,13 @@ def test_summarize_results_tracks_best_fixture(tmp_path):
 
     assert summary["best_fixture_id"] == "b"
     assert summary["best_score"] == 0.9
+
+
+def test_summarize_results_carries_fixture_payloads(tmp_path):
+    results = [
+        BenchmarkResult(fixture_id="a", best_score=0.8, best_code="code-a", run_dir=tmp_path / "a"),
+    ]
+
+    summary = summarize_results(results)
+
+    assert summary["fixtures"][0]["fixture_id"] == "a"

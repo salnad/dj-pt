@@ -122,7 +122,7 @@ def benchmark(
     """Run benchmark fixtures."""
 
     fixtures = load_manifest(manifest_path.resolve())
-    summary = (
+    benchmark_summary = (
         run_benchmark(
             manifest_path.resolve(),
             CandidateGenerator(DeterministicAudioToCodeProvider()),
@@ -137,6 +137,14 @@ def benchmark(
         if run
         else summarize_results([])
     )
+    if run:
+        summary = benchmark_summary.model_dump(mode="json")
+        results = summary["fixtures"]
+        run_dir = summary["metadata"].get("results_path")
+    else:
+        summary = benchmark_summary
+        results = []
+        run_dir = None
     _print_json(
         {
             "manifest_path": str(manifest_path.resolve()),
@@ -145,6 +153,8 @@ def benchmark(
             "resolved_fixture_ids": [fixture.fixture_id for fixture in resolved_fixtures(fixtures)],
             "unresolved_fixture_ids": [fixture.fixture_id for fixture in unresolved_fixtures(fixtures)],
             "summary": summary,
+            "results": results,
+            "run_dir": run_dir,
             "dspy_available": prompt_optimization_available(),
         }
     )

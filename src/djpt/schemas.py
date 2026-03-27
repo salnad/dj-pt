@@ -163,3 +163,15 @@ class BenchmarkResult(BaseModel):
     run_dir: Path
     metadata: dict[str, Any] = Field(default_factory=dict)
 
+
+class BenchmarkRunSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    count: int
+    average_score: float
+    best_fixture_id: str | None = None
+    best_score: float | None = None
+    fixtures: list[BenchmarkResult] = Field(default_factory=list)
+    results_path: Path | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
