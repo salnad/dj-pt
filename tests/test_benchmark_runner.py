@@ -6,6 +6,7 @@ from pathlib import Path
 from djpt.benchmark import run_benchmark
 from djpt.llm.generation import CandidateGenerator, DeterministicAudioToCodeProvider
 from djpt.optimize.search import FitOptions
+from djpt.optimize.promptopt import PROMPT_FILES
 
 
 def test_run_benchmark_builds_fixture_results(tmp_path: Path) -> None:
@@ -50,3 +51,7 @@ def test_run_benchmark_builds_fixture_results(tmp_path: Path) -> None:
     assert summary.count == 1
     assert summary.fixtures[0].fixture_id == "demo"
     assert summary.metadata["results_path"].endswith("benchmark-summary.json")
+    snapshot_dir = Path(summary.metadata["snapshot_dir"])
+    assert snapshot_dir.exists()
+    for prompt_name in PROMPT_FILES:
+        assert (snapshot_dir / "prompts" / prompt_name).exists()

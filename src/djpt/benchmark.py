@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from djpt.artifacts import create_run_dir, write_json
+from djpt.artifacts import create_run_dir, write_json, write_text
 from djpt.llm.generation import CandidateGenerator, DeterministicAudioToCodeProvider
 from djpt.optimize.search import FitOptions, run_search
+from djpt.optimize.promptopt import snapshot_prompt_optimization_summary
 from djpt.schemas import BenchmarkFixture, BenchmarkResult, BenchmarkRunSummary
 
 
@@ -67,6 +68,20 @@ def _run_fixture(
     )
 
 
+def _snapshot_prompt_templates(destination_dir: Path) -> list[str]:
+    prompt_root = Path(__file__).resolve().parents[2] / "prompts"
+    if not prompt_root.exists():
+        return []
+
+    snapshot_paths: list[str] = []
+    prompt_snapshot_dir = destination_dir / "prompts"
+    for prompt_path in sorted(prompt_root.glob("*.md")):
+        target_path = prompt_snapshot_dir / prompt_path.name
+        write_text(target_path, prompt_path.read_text(encoding="utf-8"))
+        snapshot_paths.append(str(target_path))
+    return snapshot_paths
+
+
 def persist_benchmark_summary(
     *,
     manifest_path: Path,
@@ -74,10 +89,16 @@ def persist_benchmark_summary(
 ) -> Path:
     benchmark_dir = create_run_dir("benchmark")
     summary_path = benchmark_dir / "benchmark-summary.json"
+    prompt_summary_path = benchmark_dir / "prompt-optimization-summary.json"
+    prompt_template_paths = _snapshot_prompt_templates(benchmark_dir)
+    prompt_summary = snapshot_prompt_optimization_summary(output_path=prompt_summary_path)
     write_json(
         summary_path,
         {
             "manifest_path": str(manifest_path),
+            "prompt_optimization_summary_path": str(prompt_summary_path),
+            "prompt_template_snapshot_paths": prompt_template_paths,
+            "prompt_optimization_summary": prompt_summary,
             **summary.model_dump(mode="json"),
         },
     )
@@ -111,4 +132,5 @@ def run_benchmark(
     summary.results_path = summary_path
     summary.metadata["manifest_path"] = str(manifest_path)
     summary.metadata["results_path"] = str(summary_path)
+    summary.metadata["snapshot_dir"] = str(summary_path.parent)
     return summary
