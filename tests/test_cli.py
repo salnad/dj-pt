@@ -39,3 +39,13 @@ def test_benchmark_command_reports_manifest_summary(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert '"fixture_count": 1' in result.stdout
+
+
+def test_promptopt_command_reports_snapshot(tmp_path: Path) -> None:
+    output_path = tmp_path / "promptopt-summary.json"
+
+    result = runner.invoke(app, ["promptopt", str(output_path)])
+
+    assert result.exit_code == 0
+    assert output_path.exists()
+    assert '"snapshot_path"' in result.stdout

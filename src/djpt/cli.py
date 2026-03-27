@@ -17,7 +17,10 @@ from djpt.benchmark import (
 )
 from djpt.llm.generation import CandidateGenerator, DeterministicAudioToCodeProvider
 from djpt.optimize.search import FitOptions, run_search
-from djpt.optimize.promptopt import prompt_optimization_available
+from djpt.optimize.promptopt import (
+    prompt_optimization_available,
+    prompt_optimization_summary_dict,
+)
 from djpt.config import AppConfig
 from djpt.renderer_client import render_strudel
 from djpt.schemas import RenderRequest
@@ -158,6 +161,26 @@ def benchmark(
             "dspy_available": prompt_optimization_available(),
         }
     )
+
+
+@app.command()
+def promptopt(
+    output_path: Path | None = typer.Argument(
+        None,
+        help="Optional path to write the prompt-optimization summary JSON.",
+    ),
+) -> None:
+    """Report optional prompt-optimization availability and metadata."""
+
+    payload = prompt_optimization_summary_dict()
+    if output_path is not None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        payload = {
+            **payload,
+            "snapshot_path": str(output_path.resolve()),
+        }
+    _print_json(payload)
 
 
 @app.command()
