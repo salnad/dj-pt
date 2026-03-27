@@ -183,9 +183,7 @@ def promptopt(
     if manifest_path is not None:
         result = run_prompt_optimization(
             manifest_path.resolve(),
-            config=AppConfig.from_env(),
-            max_examples=max_examples,
-            auto=auto,
+            output_path=output_path,
         )
         _print_json(result)
         return
