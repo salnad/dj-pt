@@ -1,0 +1,1 @@
+$: n("0 3 5 7").scale("minor").s("triangle").gain(0.7).attack(0.01).decay(0.08).release(0.05)
