@@ -87,6 +87,12 @@ npm --prefix renderer install
 npm --prefix renderer run build
 ```
 
+If your Python environment does not support `venv`, this also works in the cloud VM:
+
+```bash
+python3 -m pip install --user -e ".[dev]" --break-system-packages
+```
+
 ### Environment
 
 Set:
@@ -132,6 +138,18 @@ python3 -m djpt.cli score path/to/target.wav path/to/candidate.wav
 
 ```bash
 python3 -m djpt.cli fit path/to/target.mp3
+```
+
+### Inspect benchmark fixtures
+
+```bash
+python3 -m djpt.cli benchmark benchmarks/simple/manifest.json
+```
+
+### Generate benchmark targets from Strudel fixtures
+
+```bash
+python3 scripts/generate_benchmark_targets.py
 ```
 
 ## Benchmarks and prompt optimization

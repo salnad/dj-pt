@@ -20,3 +20,11 @@ def summarize_results(results: list[BenchmarkResult]) -> dict:
         "count": len(results),
         "average_score": average,
     }
+
+
+def unresolved_fixtures(fixtures: list[BenchmarkFixture]) -> list[BenchmarkFixture]:
+    return [fixture for fixture in fixtures if fixture.target_path is None]
+
+
+def resolved_fixtures(fixtures: list[BenchmarkFixture]) -> list[BenchmarkFixture]:
+    return [fixture for fixture in fixtures if fixture.target_path is not None]

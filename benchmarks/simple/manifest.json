@@ -3,7 +3,7 @@
     {
       "fixture_id": "bright-arp",
       "code_path": "benchmarks/simple/snippets/bright-arp.strudel",
-      "target_path": null,
+      "target_path": "benchmarks/generated/bright-arp.wav",
       "cycles": 4.0,
       "cps": 0.5,
       "notes": "Reference synth-only arp for smoke testing."
@@ -11,7 +11,7 @@
     {
       "fixture_id": "pulse-bass",
       "code_path": "benchmarks/simple/snippets/pulse-bass.strudel",
-      "target_path": null,
+      "target_path": "benchmarks/generated/pulse-bass.wav",
       "cycles": 4.0,
       "cps": 0.5,
       "notes": "Reference bass pulse for optimization benchmarks."
@@ -19,7 +19,7 @@
     {
       "fixture_id": "percussive-stab",
       "code_path": "benchmarks/simple/snippets/percussive-stab.strudel",
-      "target_path": null,
+      "target_path": "benchmarks/generated/percussive-stab.wav",
       "cycles": 4.0,
       "cps": 0.5,
       "notes": "Short harmonic-percussive hybrid fixture."

@@ -30,6 +30,7 @@ def test_analyze_audio_extracts_basic_features(tmp_path):
     assert analysis.duration_seconds > 0.9
     assert analysis.sample_rate == config.default_sample_rate
     assert analysis.rms > 0
+    assert analysis.tempo_bpm is None or isinstance(analysis.tempo_bpm, float)
     assert analysis.normalized_path is not None
     assert analysis.normalized_path.exists()
     assert len(analysis.chroma_mean) == 12

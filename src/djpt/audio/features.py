@@ -20,6 +20,19 @@ def _estimate_key(chroma_mean: np.ndarray) -> tuple[str | None, list[str]]:
     return top_pitch_classes[0], top_pitch_classes
 
 
+def _scalar_or_none(value: object) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, np.ndarray):
+        if value.size == 0:
+            return None
+        return float(value.reshape(-1)[0])
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def analyze_audio(path: str | Path, config: AppConfig | None = None) -> AudioAnalysis:
     resolved = config or AppConfig.from_env()
     input_path = Path(path).resolve()
@@ -37,7 +50,8 @@ def analyze_audio(path: str | Path, config: AppConfig | None = None) -> AudioAna
 
     audio, sample_rate = librosa.load(normalized_path, sr=resolved.default_sample_rate, mono=True)
     duration_seconds = float(librosa.get_duration(y=audio, sr=sample_rate))
-    tempo_bpm, beat_frames = librosa.beat.beat_track(y=audio, sr=sample_rate)
+    tempo_raw, beat_frames = librosa.beat.beat_track(y=audio, sr=sample_rate)
+    tempo_bpm = _scalar_or_none(tempo_raw)
     beat_times = librosa.frames_to_time(beat_frames, sr=sample_rate).tolist()
 
     rms = librosa.feature.rms(y=audio)[0]
@@ -61,7 +75,7 @@ def analyze_audio(path: str | Path, config: AppConfig | None = None) -> AudioAna
         normalized_path=normalized_path,
         sample_rate=sample_rate,
         duration_seconds=duration_seconds,
-        tempo_bpm=float(tempo_bpm) if tempo_bpm else None,
+        tempo_bpm=tempo_bpm,
         beat_times_seconds=[float(value) for value in beat_times],
         rms=float(np.mean(rms)) if rms.size else 0.0,
         spectral_centroid_hz=float(np.mean(spectral_centroid)) if spectral_centroid.size else 0.0,

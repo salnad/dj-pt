@@ -26,3 +26,16 @@ def test_analyze_command_reports_audio(tmp_path: Path, sine_wave_path: Path) -> 
     good_result = runner.invoke(app, ["analyze", str(sine_wave_path)])
     assert good_result.exit_code == 0
     assert "duration_seconds" in good_result.stdout
+
+
+def test_benchmark_command_reports_manifest_summary(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        '{"fixtures":[{"fixture_id":"demo","code_path":"benchmarks/simple/snippets/bright-arp.strudel","target_path":null,"cycles":4,"cps":0.5}]}',
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["benchmark", str(manifest_path)])
+
+    assert result.exit_code == 0
+    assert '"fixture_count": 1' in result.stdout

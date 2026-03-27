@@ -8,9 +8,10 @@ import typer
 from djpt.audio.analysis import compare_audio
 from djpt.audio.features import analyze_audio
 from djpt.audio.calibration import derive_bands
-from djpt.benchmark import load_manifest, summarize_results
+from djpt.benchmark import load_manifest, summarize_results, unresolved_fixtures
 from djpt.llm.generation import CandidateGenerator, DeterministicAudioToCodeProvider
 from djpt.optimize.search import FitOptions, run_search
+from djpt.optimize.promptopt import prompt_optimization_available
 from djpt.config import AppConfig
 from djpt.renderer_client import render_strudel
 from djpt.schemas import RenderRequest
@@ -116,7 +117,9 @@ def benchmark(
             "manifest_path": str(manifest_path.resolve()),
             "fixture_count": len(fixtures),
             "fixture_ids": [fixture.fixture_id for fixture in fixtures],
+            "unresolved_fixture_ids": [fixture.fixture_id for fixture in unresolved_fixtures(fixtures)],
             "summary": summarize_results([]),
+            "dspy_available": prompt_optimization_available(),
         }
     )
 
